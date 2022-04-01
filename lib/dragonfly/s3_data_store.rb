@@ -94,13 +94,6 @@ module Dragonfly
       end
     end
 
-    def bucket_exists?
-      rescuing_socket_errors{ storage.get_bucket_location(bucket_name) }
-      true
-    rescue Excon::Errors::NotFound => e
-      false
-    end
-
     private
 
     def ensure_configured
@@ -116,11 +109,22 @@ module Dragonfly
       end
     end
 
+    # def bucket_exists?
+    #   rescuing_socket_errors{ storage.get_bucket_location(bucket_name) }
+    #   true
+    # rescue Excon::Errors::NotFound => e
+    #   false
+    # end
+
     def ensure_bucket_initialized
-      unless @bucket_initialized
-        rescuing_socket_errors{ storage.put_bucket(bucket_name, 'LocationConstraint' => region) } unless bucket_exists?
-        @bucket_initialized = true
-      end
+      @bucket_initialized = true
+      # Disable this code so that using this gem requires fewer AWS permissions.
+      # This means that the bucket has to exist before using this gem.
+      #
+      # unless @bucket_initialized
+      #   rescuing_socket_errors{ storage.put_bucket(bucket_name, 'LocationConstraint' => region) } unless bucket_exists?
+      #   @bucket_initialized = true
+      # end
     end
 
     def generate_uid(name)
