@@ -38,11 +38,6 @@ module Dragonfly
 
       rescuing_socket_errors do
         content.file do |f|
-          Rails.logger.info "Dragonfly S3 put_object"
-          Rails.logger.info bucket_name
-          Rails.logger.info full_path(uid)
-          Rails.logger.info full_storage_headers(headers, content.meta)
-
           storage.put_object(bucket_name, full_path(uid), f, full_storage_headers(headers, content.meta))
         end
       end
@@ -87,18 +82,13 @@ module Dragonfly
 
     def storage
       @storage ||= begin
-        opts = fog_storage_options.merge({
+        storage = Fog::Storage.new(fog_storage_options.merge({
           :provider => 'AWS',
           :aws_access_key_id => access_key_id,
           :aws_secret_access_key => secret_access_key,
           :region => region,
           :use_iam_profile => use_iam_profile
-        }).reject {|name, option| option.nil?}
-
-        Rails.logger.info "Dragonfly S3 storage"
-        Rails.logger.info opts
-
-        storage = Fog::Storage.new(opts)
+        }).reject {|name, option| option.nil?})
         storage.sync_clock
         storage
       end
